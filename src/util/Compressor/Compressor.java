@@ -120,7 +120,7 @@ public class Compressor
 
         try (DataInputStream in = new DataInputStream(new FileInputStream(file)))
         {
-            ZipEntry entry = new ZipEntry(Paths.get(basePath.toString(), file.getName()).toString());
+            ZipEntry entry = new ZipEntry(basePath + "/" + file.getName());
             zipOut.putNextEntry(entry);
             int readBytes = 0;
             byte data[] = new byte[1024 * 1024];

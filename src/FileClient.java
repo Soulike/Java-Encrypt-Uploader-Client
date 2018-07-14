@@ -38,13 +38,15 @@ public class FileClient
             // 如果是目录，就需要打包
             try
             {
+                // TODO: 文件夹打包方法有问题
                 if (filePath.toFile().isDirectory())
                 {
                     try
                     {
-                        Path zippedFilePath = Files.createTempFile(filePath.toFile().getName(), "zip");
+                        Path zippedFilePath = Files.createTempFile(filePath.toFile().getName(), ".zip");
                         compress(filePath, zippedFilePath);
                         uploadFile(args[0], Integer.parseInt(args[1]), zippedFilePath, true);
+                        Files.delete(zippedFilePath);
                     }
                     catch (IOException e)
                     {
@@ -56,6 +58,7 @@ public class FileClient
                 // 如果不是目录，直接上传
                 else if (filePath.toFile().isFile())
                 {
+                    logger.logInfo("开始上传");
                     uploadFile(args[0], Integer.parseInt(args[1]), filePath, false);
                 }
             }
