@@ -97,7 +97,7 @@ public class EncryptedFileUploader
                 startTime = System.currentTimeMillis();
 
                 // 生成并传输文件对象
-                currentFileInfo = new UploadFileInfo(currentFile.getName(), currentFile.length(), true, parentPath.toAbsolutePath().relativize(path).toString());
+                currentFileInfo = new UploadFileInfo(currentFile.getName(), currentFile.length(), true, parentPath.toAbsolutePath().relativize(path).toFile());
                 fileIn = new DataInputStream(new FileInputStream(currentFile));
                 objOut.writeObject(currentFileInfo);
                 objOut.flush();
@@ -119,7 +119,7 @@ public class EncryptedFileUploader
             else if (currentFile.isDirectory())
             {
                 // 生成并传输文件对象
-                currentFileInfo = new UploadFileInfo(currentFile.getName(), 0, false, parentPath.toAbsolutePath().relativize(path).toString());
+                currentFileInfo = new UploadFileInfo(currentFile.getName(), 0, false, parentPath.toAbsolutePath().relativize(path).toFile());
                 objOut.writeObject(currentFileInfo);
                 objOut.flush();
             }

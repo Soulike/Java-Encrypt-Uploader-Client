@@ -1,5 +1,6 @@
 package util.Objects;
 
+import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -23,10 +24,10 @@ public class UploadFileInfo implements Serializable
     private final boolean isFile;
 
     /**
-     * 文件路径，相对于上传的文件夹。
+     * 存储文件路径的 File 对象，相对于上传的文件夹。
      * 例如要上传的文件夹为 corejava，该路径可能为 corejava/folder1/1.txt。
      */
-    private final String filePath;
+    private final File file;
 
     /**
      * 构造函数，指定该文件属性
@@ -34,13 +35,14 @@ public class UploadFileInfo implements Serializable
      * @param fileName 文件名（包含扩展名）
      * @param fileSize 文件大小（字节）
      * @param isFile   是文件还是文件夹
+     * @param file     存储文件路径的 File 对象
      */
-    public UploadFileInfo(String fileName, long fileSize, boolean isFile, String filePath)
+    public UploadFileInfo(String fileName, long fileSize, boolean isFile, File file)
     {
         this.fileName = fileName;
         this.fileSize = fileSize;
         this.isFile = isFile;
-        this.filePath = filePath;
+        this.file = file;
     }
 
     /**
@@ -68,10 +70,10 @@ public class UploadFileInfo implements Serializable
     }
 
     /**
-     * 获得文件路径，相对于上传的文件夹。
+     * 获得存储文件路径的 File 对象，相对于上传的文件夹。
      */
-    public String getFilePath()
+    public File getFile()
     {
-        return filePath;
+        return file;
     }
 }
