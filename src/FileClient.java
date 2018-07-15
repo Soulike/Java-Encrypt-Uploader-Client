@@ -1,32 +1,23 @@
-import util.Logger.MyLogger;
-import util.Objects.Message;
-import util.Objects.UploadFileInfo;
+import util.MyLogger;
+import util.Objects.*;
 
-import static util.FileTool.FileStructureReader.*;
+import static util.FileStructureReader.*;
+import static util.AESKeyGenerator.*;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
+import java.nio.file.*;
+import java.security.*;
 import java.util.List;
 
 public class FileClient
 {
-    private static String ENCRYPT_MODE = "AES/CFB8/NoPadding";
-    private static MyLogger logger = new MyLogger("文件上传");
+    private static final String ENCRYPT_MODE = "AES/CFB8/NoPadding";
+    private static final MyLogger logger = new MyLogger("文件上传");
     private static Cipher outCipher;
     private static Cipher inCipher;
 
@@ -73,42 +64,51 @@ public class FileClient
     private static void uploadFile(Path filePath, Socket socket) throws IOException, ClassNotFoundException
     {
         // 记录时间戳，用于计算时间以及上传速度
-
         long startTime = 0;
         long endTime = 0;
 
+        // 加密输出流
+        final CipherOutputStream encryptedOut = new CipherOutputStream(socket.getOutputStream(), outCipher);
+        // 解密输入流
+        final CipherInputStream decryptedIn = new CipherInputStream(socket.getInputStream(), inCipher);
 
-        CipherOutputStream encryptedOut = new CipherOutputStream(socket.getOutputStream(), outCipher);
-        CipherInputStream decryptedIn = new CipherInputStream(socket.getInputStream(), inCipher);
+        // 对象输出流
+        final ObjectOutputStream objOut = new ObjectOutputStream(encryptedOut);
+        // 数据输出流
+        final DataOutputStream dataOut = new DataOutputStream(encryptedOut);
 
-        ObjectOutputStream objOut = new ObjectOutputStream(encryptedOut);
-
-        DataOutputStream dataOut = new DataOutputStream(encryptedOut);
+        // 文件读取输入流
         DataInputStream fileIn = null;
 
+        // 读取文件缓冲区
+        final byte[] buffer = new byte[512];
 
-        byte[] buffer = new byte[512];
-
-        List<Path> fileList = getAllFiles(filePath);
+        // 得到该文件夹下所有的文件
+        final List<Path> fileList = getAllFiles(filePath);
 
         // 需要得到父目录来保证文件的相对路径正确
-        Path parentPath = filePath.getParent();
+        final Path parentPath = filePath.getParent();
 
+        // 指向当前处理文件的文件对象
         UploadFileInfo currentFileInfo = null;
         File currentFile = null;
+
+        // 遍历文件列表，逐个上传
         for (Path path : fileList)
         {
             currentFile = path.toFile();
-            // 如果是一个文件，就上传
+
             if (currentFile.isFile())
             {
                 startTime = System.currentTimeMillis();
 
+                // 生成并传输文件对象
                 currentFileInfo = new UploadFileInfo(currentFile.getName(), currentFile.length(), true, parentPath.toAbsolutePath().relativize(path).toString());
                 fileIn = new DataInputStream(new FileInputStream(currentFile));
                 objOut.writeObject(currentFileInfo);
                 objOut.flush();
 
+                // 传输文件数据
                 int readBytes = 0;
                 while ((readBytes = fileIn.read(buffer)) != -1)
                 {
@@ -124,14 +124,16 @@ public class FileClient
             }
             else if (currentFile.isDirectory())
             {
+                // 生成并传输文件对象
                 currentFileInfo = new UploadFileInfo(currentFile.getName(), 0, false, parentPath.toAbsolutePath().relativize(path).toString());
                 objOut.writeObject(currentFileInfo);
                 objOut.flush();
             }
         }
+        // 传输完成，关闭输出流告知服务器文件已经传输完毕
         socket.shutdownOutput();
 
-
+        // 接收 Message 对象获取结果
         ObjectInputStream objIn = new ObjectInputStream(decryptedIn);
         Message message = (Message) objIn.readObject();
         if (message.isSuccessful())
@@ -144,34 +146,10 @@ public class FileClient
         }
     }
 
-    private static Key getKey(String password)
-    {
-        byte[] ketData = get16BytesKetData(password);
-        return new SecretKeySpec(ketData, "AES");
-    }
-
-    private static byte[] get16BytesKetData(String password)
-    {
-        byte[] passwordBytes = password.getBytes(StandardCharsets.UTF_8);
-        byte[] BytesKeyData = new byte[16];
-        int copyLength = passwordBytes.length >= 16 ? 16 : passwordBytes.length;
-        for (int i = 0; i < copyLength; i++)
-        {
-            BytesKeyData[i] = passwordBytes[i];
-        }
-
-        for (int i = copyLength; i < 16; i++)
-        {
-            BytesKeyData[i] = 0;
-        }
-
-        return BytesKeyData;
-    }
-
     private static Socket connectServer(String address, int port) throws NoSuchPaddingException, NoSuchAlgorithmException, IOException, InvalidKeyException, InvalidAlgorithmParameterException
     {
 
-        Key key = getKey("JavaUploader");
+        Key key = getAESKey("JavaUploader");
         outCipher = Cipher.getInstance(ENCRYPT_MODE);
         inCipher = Cipher.getInstance(ENCRYPT_MODE);
         IvParameterSpec iv = new IvParameterSpec("1122334455667788".getBytes());
