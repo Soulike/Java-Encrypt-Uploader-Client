@@ -33,7 +33,8 @@ public class FileStructureReader
     private static void getAllFilesRecursive(Path path, List<Path> fileList) throws IOException
     {
         fileList.add(path);
-        if (path.toFile().isDirectory())
+        // 如果是目录应当递归。但如果是符号链接就放弃递归
+        if (path.toFile().isDirectory() && !Files.isSymbolicLink(path))
         {
             Object[] list = Files.list(path).toArray();
             for (Object fileObj : list)
