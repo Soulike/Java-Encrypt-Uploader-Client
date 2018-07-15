@@ -95,6 +95,7 @@ public class EncryptedFileUploader
             if (currentFile.isFile())
             {
                 startTime = System.currentTimeMillis();
+                System.out.printf("文件 %s 开始上传", currentFile.getName());
 
                 // 生成并传输文件对象
                 currentFileInfo = new UploadFileInfo(currentFile.getName(), currentFile.length(), true, parentPath.toAbsolutePath().relativize(path).toFile());
