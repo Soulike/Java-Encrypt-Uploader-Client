@@ -9,34 +9,69 @@ import java.io.Serializable;
  */
 public class UploadFileInfo implements Serializable
 {
+    /**
+     * 文件名（包含扩展名）。
+     */
     private final String fileName;
+    /**
+     * 文件大小（字节）。
+     */
     private final long fileSize;
-    private final boolean needUnzip;
+    /**
+     * 是文件还是文件夹。
+     */
+    private final boolean isFile;
 
     /**
-     * @param fileName  要上传文件的名字。
-     * @param fileSize  要上传文件的大小。
-     * @param needUnzip 文件上传后是否需要解压缩。
+     * 文件路径，相对于上传的文件夹。
+     * 例如要上传的文件夹为 corejava，该路径可能为 corejava/folder1/1.txt。
      */
-    public UploadFileInfo(String fileName, long fileSize, boolean needUnzip)
+    private final String filePath;
+
+    /**
+     * 构造函数，指定该文件属性
+     *
+     * @param fileName 文件名（包含扩展名）
+     * @param fileSize 文件大小（字节）
+     * @param isFile   是文件还是文件夹
+     */
+    public UploadFileInfo(String fileName, long fileSize, boolean isFile, String filePath)
     {
         this.fileName = fileName;
         this.fileSize = fileSize;
-        this.needUnzip = needUnzip;
+        this.isFile = isFile;
+        this.filePath = filePath;
     }
 
+    /**
+     * 获取文件名（包含扩展名）
+     */
     public String getFileName()
     {
         return fileName;
     }
 
+    /**
+     * 获取文件大小（字节）
+     */
     public long getFileSize()
     {
         return fileSize;
     }
 
-    public boolean isZipped()
+    /**
+     * 该文件是文件还是文件夹
+     */
+    public boolean isFile()
     {
-        return needUnzip;
+        return isFile;
+    }
+
+    /**
+     * 获得文件路径，相对于上传的文件夹。
+     */
+    public String getFilePath()
+    {
+        return filePath;
     }
 }
