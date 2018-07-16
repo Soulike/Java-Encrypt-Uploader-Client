@@ -95,7 +95,7 @@ public class EncryptedFileUploader
             if (currentFile.isFile())
             {
                 startTime = System.currentTimeMillis();
-                System.out.printf("文件 %s 开始上传", currentFile.getName());
+                System.out.printf("文件 %s 开始上传\n", currentFile.getName());
 
                 // 生成并传输文件对象
                 currentFileInfo = new UploadFileInfo(currentFile.getName(), currentFile.length(), true, parentPath.toAbsolutePath().relativize(path).toFile());
@@ -105,11 +105,29 @@ public class EncryptedFileUploader
 
                 // 传输文件数据
                 int readBytes = 0;
+                long totalBytes = 0;
+                int lastMultiple = 0;
+                int progressPrinted = 0;
+
                 while ((readBytes = fileIn.read(buffer)) != -1)
                 {
                     dataOut.write(buffer, 0, readBytes);
                     dataOut.flush();
+                    totalBytes += readBytes;
+                    // 是2%的整数倍，输出一个进度标志
+                    if ((int) ((double) totalBytes * 50 / currentFileInfo.getFileSize()) > lastMultiple)
+                    {
+                        lastMultiple = (int) ((double) totalBytes * 50 / currentFileInfo.getFileSize());
+                        progressPrinted++;
+                        System.out.print("=");
+                    }
                 }
+                // 有可能出现文件过小，补齐进度条
+                for (long i = progressPrinted; i < 50; i++)
+                {
+                    System.out.print("=");
+                }
+                System.out.println();
 
                 endTime = System.currentTimeMillis();
 
