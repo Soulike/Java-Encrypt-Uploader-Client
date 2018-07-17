@@ -110,6 +110,7 @@ public class EncryptedFileUploader
                 int lastMultiple = 0;
                 int progressPrinted = 0;
 
+                System.out.println("--------------------------------------------------|");
                 while ((readBytes = fileIn.read(buffer)) != -1)
                 {
                     dataOut.write(buffer, 0, readBytes);
