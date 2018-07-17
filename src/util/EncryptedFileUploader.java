@@ -50,6 +50,7 @@ public class EncryptedFileUploader
     {
         // 连接服务器
         Socket socket = new Socket(address, port);
+        socket.setSoTimeout(5000);
 
         // 创建 Cipher
         Cipher outCipher = Cipher.getInstance(ENCRYPT_MODE);
