@@ -132,7 +132,7 @@ public class EncryptedFileUploader
                 endTime = System.currentTimeMillis();
 
                 double fileSizeInMB = currentFile.length() / 1024f / 1024f;
-                double uploadTimeInSecond = (endTime - startTime) / 1000f == 0 ? 0.01 : (endTime - startTime) / 1000f;
+                double uploadTimeInSecond = (endTime - startTime) / 1000f < 0.01 ? 0.01 : (endTime - startTime) / 1000f;
                 System.out.printf("%s %f MB 上传成功，用时 %.2f 秒, 平均上传速度 %.2f KB/S\n", currentFile.getName(), fileSizeInMB, uploadTimeInSecond, fileSizeInMB * 1000 / uploadTimeInSecond);
             }
             else if (currentFile.isDirectory())
